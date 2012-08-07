@@ -134,21 +134,21 @@
     }
   };
 
-  var eventListener   = new EventListener();
-
   // Overwrite Element.addEventListener method for transparency fallback
   //
   // Inpired by: http://stackoverflow.com/questions/7220515/extending-node-addeventlistener-method-with-the-same-name#7220628
   element.prototype.addEventListener = function( type, listener, useCapture ) {
-    var timeout;
+    var timeout,
+    // Attach events stack to element
+        listeners = this.listeners = new EventListener();
     /** CASE 1 : endEvent **/
     // check event name and support for the event
     if ( type == 'endEvent' && !isEventSupported(type.substring(0, type.indexOf('Event'))) ) {
       // register listener to the events
-      eventListener.add( type, listener );
+      listeners.add( type, listener );
       // set a timer based on begin and dur attributes
       timeout = clocker( this.getAttribute('begin') ) + clocker( this.getAttribute('dur') );
-      window.setTimeout( function() { eventListener.fire(type); }, timeout );
+      window.setTimeout( function() { listeners.fire(type); }, timeout );
     }
 
     // call the original method for fallback
