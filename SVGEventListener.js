@@ -16,8 +16,8 @@
   'use strict';
 
   var addEventListener_legacy   = element.prototype.addEventListener,
-      svg                       = doc.createElementNS( 'http://www.w3.org/2000/svg', 'svg' );
-  // helper functions
+      svg                       = doc.createElementNS( 'http://www.w3.org/2000/svg', 'svg' ),
+      // helper functions
       isString                  = function ( s ) {
         return typeof s == "string";
       },
