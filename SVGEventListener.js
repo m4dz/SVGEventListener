@@ -5,6 +5,8 @@
 //
 // https://github.com/madsgraphics/SVGEventListener.js/
 //
+// Version: 0.1-pre
+//
 // Tri-license - WTFPL | MIT | BSD
 //
 // Please minify before use.
@@ -15,26 +17,29 @@
 
   var addEventListener_legacy   = element.prototype.addEventListener,
       svg                       = doc.createElementNS( 'http://www.w3.org/2000/svg', 'svg' );
+  // helper functions
+      isString                  = function ( s ) {
+        return typeof s == "string";
+      },
+      isUndefined               = function ( obj ) {
+        return typeof obj === undefined;
+      },
+      isFunction                = function ( fn ) {
+        return toString.call( fn ) == "[object Function]";
+      },
+      // Inspired by: http://perfectionkills.com/detecting-event-support-without-browser-sniffing/
+      isEventSupported          = function ( eventName ) {
+        eventName = 'on' + eventName;
+        // Check if the event attribute exists on el
+        var isSupported = ( eventName in svg );
+        // if not, try to set an event attribute with a falsy method
+        if ( !isSupported ) {
+          svg.setAttribute( eventName, 'return;' );
+          isSupported = isFunction( svg[eventName] );
+        }
 
-  /***
-   * Helper functions
-   ***/
-
-  // Check if the event is supported by the browser or not
-  //
-  // Inspired by: http://perfectionkills.com/detecting-event-support-without-browser-sniffing/
-  function isEventSupported( eventName ) {
-    eventName = 'on' + eventName;
-    // Check if the event attribute exists on el
-    var isSupported = ( eventName in svg );
-    // if not, try to set an event attribute with a falsy method
-    if ( !isSupported ) {
-      svg.setAttribute( eventName, 'return;' );
-      isSupported = typeof svg[eventName] == 'function';
-    }
-
-    return isSupported;
-  }
+        return isSupported;
+      };
 
   // Clocker.js
   // Convert a legal clock string value (in SMIL definition) to milliseconds
@@ -71,7 +76,7 @@
         time += times[t]*Math.pow(60, t)*1000;
       }
 
-      return time;
+      return Number(time);
     }
   }
 
