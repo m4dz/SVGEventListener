@@ -21,8 +21,11 @@
       isString                  = function ( s ) {
         return typeof s == "string";
       },
+      isArray                   = Array.isArray || function ( obj ) {
+        return toString.call( obj ) == "[object Array]";
+      },
       isUndefined               = function ( obj ) {
-        return typeof obj === undefined;
+        return obj === undefined;
       },
       isFunction                = function ( fn ) {
         return toString.call( fn ) == "[object Function]";
@@ -101,7 +104,7 @@
     add: function addListener( type, listener ) {
       // if there is no triggers already defined for this events,
       // init an a-empty array
-      if ( typeof this._listeners[type] == 'undefined' ) {
+      if ( isUndefined( this._listeners[type] ) ) {
         this._listeners[type] = [];
       }
       // add trigger to the event
@@ -110,7 +113,7 @@
     // fire the event
     fire: function fireListeners( event ) {
       // if called only by event name (useful), build a correct object
-      if ( typeof event == 'string' ) {
+      if ( isString( event ) ) {
         event = {type: event};
       }
       // set target if unavailable
@@ -122,7 +125,7 @@
         throw new Error( "Event object missing 'type' property." );
       }
       // If the type has associated triggers, then launch them
-      if ( this._listeners[event.type] instanceof Array ) {
+      if ( isArray( this._listeners[event.type] ) ) {
         var listeners = this._listeners[event.type];
         for ( var l in listeners ) {
           listeners[l].call( this, event );
