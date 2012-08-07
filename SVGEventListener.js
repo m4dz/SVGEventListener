@@ -55,11 +55,11 @@
     // Format without ':' ?
     if ( times.length == 1 ) {
       // Time already given in milliseconds (250ms)
-      if (( i = times[0].lastIndexOf('ms') ) != -1 ) {
+      if ( ( i = times[0].lastIndexOf('ms') ) != -1 ) {
         return Number( times[0].substring(0, i) );
       }
       // Time given in seconds (2s)
-      else if (( i = times[0].lastIndexOf('s') ) != -1 ) {
+      else if ( ( i = times[0].lastIndexOf('s') ) != -1 ) {
         return times[0].substring(0, i) * 1000;
       }
       // Time without unity. Assume in seconds,
@@ -79,7 +79,7 @@
         time += times[t]*Math.pow(60, t)*1000;
       }
 
-      return Number(time);
+      return Number( time );
     }
   }
 
