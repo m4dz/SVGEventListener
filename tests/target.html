@@ -17,6 +17,8 @@
   <script type="text/javascript">
     var anim3 = document.getElementById('anim3');
     anim3.addEventListener('endEvent', function(event) {
+        console.log(event.target);
+
         p = document.createElement('p');
         t = document.createTextNode('It works!');
         p.appendChild(t);
