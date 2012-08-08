@@ -16,11 +16,12 @@
 // * FIXME: Chrome generate an error on launch :
 //   Uncaught TypeError: Cannot read property 'classList' of null
 
-( function ( window, doc, el ) {
+( function ( window, doc, el, svgel ) {
 
   'use strict';
 
   var addEventListenerLegacy   = el.prototype.addEventListener,
+      beginElementLegacy       = svgel.prototype.beginElement,
       svg                      = doc.createElementNS( 'http://www.w3.org/2000/svg', 'svg' ),
       // helper functions
       isString                  = function ( s ) {
@@ -212,4 +213,15 @@
     return addEventListenerLegacy.call( this, type, listener, useCapture );
   };
 
-})( this, document, Element );
+  // Overwrite ElementTimeControl.beginElement method for 'indefinite' usecase
+  svgel.prototype.beginElement = function () {
+    // Does the element uses our custom event stack ?
+    if ( !isUndefined( this.listeners ) ) {
+      this.listeners.fire( 'beginEvent' );
+    }
+    // ***
+    // call the original method for fallback
+    return beginElementLegacy.call( this );
+  };
+
+})( this, document, Element, SVGElement );
