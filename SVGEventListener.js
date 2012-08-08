@@ -10,7 +10,12 @@
 // Tri-license - WTFPL | MIT | BSD
 //
 // Please minify before use.
+
+// ##ISSUES##
 //
+// * FIXME: Chrome generate an error on launch :
+//   Uncaught TypeError: Cannot read property 'classList' of null
+
 ( function ( window, doc, el ) {
 
   'use strict';
