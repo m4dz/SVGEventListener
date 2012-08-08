@@ -1,11 +1,9 @@
 // SVGEventListener.js
-// Version - 0.1-pre
+// Version - 0.1
 //
 // by MAD - @madsgraphics - ecrire[at]madsgraphics.com
 //
 // https://github.com/madsgraphics/SVGEventListener.js/
-//
-// Version: 0.1-pre
 //
 // Tri-license - WTFPL | MIT | BSD
 //
@@ -52,7 +50,7 @@
   // Clocker.js
   // Convert a legal clock string value (in SMIL definition) to milliseconds
   //
-  // Originaly released here:
+  // Originaly released here: https://github.com/madsgraphics/clocker.js
   function clocker( time ) {
     var i,
         times = time.split( ':' );
@@ -98,12 +96,16 @@
   // inspired by: http://www.nczonline.net/blog/2010/03/09/custom-events-in-javascript/
 
   // Create custom listener object with private property to store listeners
-  function EventListener() {
+  function EventListener( parent ) {
+    // listeners stack
     this._listeners = {};
+    // autoFire flag for register launching
     this.autoFire   = {
       begin: false,
       end: false
     };
+    // store parent obj
+    this.parent = parent;
   }
 
   // Extends it to add and fire events
@@ -126,9 +128,8 @@
         event = {type: event};
       }
       // set target if unavailable
-      if ( !event.target ) {
-        // FIXME: Fix correct target for event
-        event.target = this;
+      if ( !event.target || !event.currentTarget ) {
+        event.target = event.currentTarget = this.parent;
       }
       // if there is no event given, throw an error
       if ( !event.type ) {
@@ -157,7 +158,7 @@
     // Attach a new event listeners stack if it doesn't exists
     if( isUndefined( this.listeners ) )
     {
-      this.listeners = new EventListener();
+      this.listeners = new EventListener( this );
     }
     // ***
     // check event name and support for endEvent
