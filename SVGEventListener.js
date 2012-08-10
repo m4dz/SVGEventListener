@@ -3,7 +3,7 @@
 //
 // by MAD - @madsgraphics - ecrire[at]madsgraphics.com
 //
-// https://github.com/madsgraphics/SVGEventListener.js/
+// https://github.com/madsgraphics/SVGEventListener/
 //
 // Tri-license - WTFPL | MIT | BSD
 //
@@ -13,6 +13,9 @@
 //
 // * FIXME: Chrome generate an error on launch :
 //   Uncaught TypeError: Cannot read property 'classList' of null
+//
+// * FIXME: Opera uses custom addEventListener even if it supports legacy
+//   versions
 
 ( function ( window, doc, el ) {
 
