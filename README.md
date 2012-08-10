@@ -23,11 +23,16 @@ Just use the normal `addEventListener` on your elements, and the script with aut
 
 Any forks and stuff are welcome.
 
-##Current Released Version##
+##Changelog##
 
-0.1-pre
+**0.1**
 
-First implementation. Only works for _endEvent_ for testing for the moment. Will support the rest of the events on the next release.
+* First implementation. Do not support `repeatEvent` for the moment.
+
+
+##Know issues##
+
+* Under Opera, a bug call the `endEvent` multiple times.
 
 
 ##License##
