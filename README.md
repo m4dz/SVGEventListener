@@ -25,6 +25,11 @@ Any forks and stuff are welcome.
 
 ##Changelog##
 
+**0.1.1**
+
+* Update [Clocker.js](https://github.com/madsgraphics/clocker.js) with the last release
+
+
 **0.1**
 
 * First implementation. Do not support `repeatEvent` for the moment.
