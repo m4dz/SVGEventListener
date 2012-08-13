@@ -54,27 +54,37 @@
   // Convert a legal clock string value (in SMIL definition) to milliseconds
   //
   // Originaly released here: https://github.com/madsgraphics/clocker.js
-  function clocker( time ) {
-    var i,
-        times = time.split( ':' );
+  function clocker( timestr ) {
+    var time,
+        decimal,
+        times = timestr.split( ':' );
 
-    // Format without ':' ?
+    // Timecount-value
+    // = Formats without ':'
     if ( times.length == 1 ) {
+      time = times[0];
       // Time already given in milliseconds (250ms)
-      if ( ( i = times[0].lastIndexOf('ms') ) != -1 ) {
-        return Number( times[0].substring(0, i) );
+      if ( time.lastIndexOf('ms') != -1 ) {
+        return parseInt(time);
       }
-      // Time given in seconds (2s)
-      else if ( ( i = times[0].lastIndexOf('s') ) != -1 ) {
-        return times[0].substring(0, i) * 1000;
-      }
-      // Time without unity. Assume in seconds,
-      // with potentially decimals (2.05 == 2050ms)
+      // Othermetrics
       else {
-        return times[0]*1000;
+        // minutes
+        if( time.lastIndexOf('min') != -1 ) {
+          time = parseFloat(time) * 60;
+        }
+        // hours
+        else if( time.lastIndexOf('h') != -1 ) {
+          time = parseFloat(time) * 3600;
+        }
+        // Time is now in seconds.
+        // If time is without metric, then assume in seconds,
+        // maybe float (2.05 == 2050ms)
+        // So convert in ms…
+        return parseFloat(time) * 1000;
       }
     }
-    // Legacy clock value with ':' separator
+    // Full-clock-value || Partial-clock-value
     else {
       // Reverse order to iterate from seconds to hours
       times.reverse();
