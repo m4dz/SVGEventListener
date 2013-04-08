@@ -42,7 +42,7 @@ Any forks and stuff are welcome.
 
 ##Know issues##
 
-* Under Opera, a bug call the `endEvent` multiple times.
+None, for the moment \o/…
 
 
 ##License##
