@@ -25,6 +25,11 @@ Any forks and stuff are welcome.
 
 ##Changelog##
 
+**0.1.2**
+
+* Update the support of event's `animate` element : the implementation currently not support event detection using a simple `animate['endEvent']?` test. We need to create dummy svg element and inject temporarily them to the DOM to make the detection and update a map of supported events :).
+
+
 **0.1.1**
 
 * Update [Clocker.js](https://github.com/madsgraphics/clocker.js) with the last release
