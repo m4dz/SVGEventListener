@@ -1,5 +1,5 @@
 // SVGEventListener.js
-// Version - 0.1.1
+// Version - 0.1.2
 //
 // by MAD - @madsgraphics - ecrire[at]madsgraphics.com
 //
@@ -9,45 +9,58 @@
 //
 // Please minify before use.
 
-// ##ISSUES##
-//
-// * FIXME: Chrome generate an error on launch :
-//   Uncaught TypeError: Cannot read property 'classList' of null
-//
-// * FIXME: Opera uses custom addEventListener even if it supports legacy
-//   versions
-
 ( function ( window, doc, el ) {
 
   'use strict';
 
-  var addEventListenerLegacy   = el.prototype.addEventListener,
-      svg                      = doc.createElementNS( 'http://www.w3.org/2000/svg', 'svg' ),
+  var addEventListenerLegacy = el.prototype.addEventListener,
+      svgns                  = 'http://www.w3.org/2000/svg',
       // helper functions
-      isString                  = function ( s ) {
+      isString               = function ( s ) {
         return typeof s == "string";
       },
-      isArray                   = Array.isArray || function ( obj ) {
+      isArray                = Array.isArray || function ( obj ) {
         return toString.call( obj ) == "[object Array]";
       },
-      isUndefined               = function ( obj ) {
+      isUndefined            = function ( obj ) {
         return obj === undefined;
       },
-      isFunction                = function ( fn ) {
-        return toString.call( fn ) == "[object Function]";
-      },
-      // Inspired by: http://perfectionkills.com/detecting-event-support-without-browser-sniffing/
-      isEventSupported          = function ( eventName ) {
-        eventName = 'on' + eventName;
-        // Check if the event attribute exists on el
-        var isSupported = ( eventName in svg );
-        // if not, try to set an event attribute with a falsy method
-        if ( !isSupported ) {
-          svg.setAttribute( eventName, 'return;' );
-          isSupported = isFunction( svg[eventName] );
-        }
+      // Inspired by:
+      // http://perfectionkills.com/detecting-event-support-without-browser-sniffing/
+      supportedEvents        = {},
+      isEventSupported       = function ( eventName ) {
+        // early return if the event is in cache
+        if ( typeof supportedEvents[eventName] !== 'undefined' )
+          return supportedEvents[eventName];
 
-        return isSupported;
+        // initiliaze the support at false for detection
+        supportedEvents[eventName] = false;
+        // create svg (and childs) nodes
+        var svg     = doc.createElementNS( svgns, 'svg' ),
+            element = doc.createElementNS(svgns, 'rect'),
+            animate = doc.createElementNS( svgns, 'animate' );
+
+        // set duration to 1ms to detect endEvent
+        animate.setAttributeNS(null, "dur", "1ms");
+        // append elements
+        element.appendChild(animate);
+        svg.appendChild(element);
+
+        // attach a listener to the event that update the events cache
+        addEventListenerLegacy.call(animate, eventName + 'Event', function() {
+          supportedEvents[eventName] = true;
+        }, false);
+
+        // attach svg to the DOM (else it doesn't detect anything) but cache it
+        svg.setAttributeNS(null, "style", "display:none");
+        doc.body.appendChild(svg);
+        // Set a timeout to remove the dummy SVG element
+        // It is setted to 50 to leave the DOM breath and get the SVG event
+        // result before removing it :)
+        setTimeout(function() { doc.body.removeChild(svg); }, 50);
+
+        // Return the current event support status
+        return supportedEvents[eventName];
       };
 
   // Clocker.js
@@ -56,7 +69,6 @@
   // Originaly released here: https://github.com/madsgraphics/clocker.js
   function clocker( timestr ) {
     var time,
-        decimal,
         times = timestr.split( ':' );
 
     // Timecount-value
@@ -162,8 +174,7 @@
   //
   // Inpired by: http://stackoverflow.com/questions/7220515/extending-node-addeventlistener-method-with-the-same-name#7220628
   el.prototype.addEventListener = function ( type, listener, useCapture ) {
-    var timeout,
-        index,
+    var index,
         begin    = this.getAttribute('begin'),
         duration = this.getAttribute('dur'),
         that     = this;
@@ -183,6 +194,9 @@
         // if not, add an autofired at the end of animation (=dur)
         this.addEventListener ( 'beginEvent' , function () {
           window.setTimeout( function () {
+            // Check again is the support is true or not.
+            // Early return if true (don't trigger the custom event stack)
+            if( !!isEventSupported( 'end' ) ) return;
             that.listeners.fire( 'endEvent' );
           }, clocker( duration ) )
         });
@@ -202,6 +216,9 @@
         if ( !this.listeners.autoFire.begin ) {
           // not already activated, so activate it
           window.setTimeout( function () {
+            // Check again is the support is true or not.
+            // Early return if true (don't trigger the custom event stack)
+            if( !!isEventSupported( 'begin' ) ) return;
             that.listeners.fire( 'beginEvent' );
           }, clocker( begin ) );
           // set autofire to true to prevent multiple launch
