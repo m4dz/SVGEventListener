@@ -1,5 +1,5 @@
 // SVGEventListener.js
-// Version - 0.1.2
+// Version - 0.1.3
 //
 // by MAD - @madsgraphics - ecrire[at]madsgraphics.com
 //
@@ -17,10 +17,10 @@
       svgns                  = 'http://www.w3.org/2000/svg',
       // helper functions
       isString               = function ( s ) {
-        return typeof s == "string";
+        return typeof s === 'string';
       },
       isArray                = Array.isArray || function ( obj ) {
-        return toString.call( obj ) == "[object Array]";
+        return {}.toString.call( obj ) === '[object Array]';
       },
       isUndefined            = function ( obj ) {
         return obj === undefined;
@@ -30,8 +30,9 @@
       supportedEvents        = {},
       isEventSupported       = function ( eventName ) {
         // early return if the event is in cache
-        if ( typeof supportedEvents[eventName] !== 'undefined' )
+        if ( typeof supportedEvents[eventName] !== 'undefined' ) {
           return supportedEvents[eventName];
+        }
 
         // initiliaze the support at false for detection
         supportedEvents[eventName] = false;
@@ -41,7 +42,7 @@
             animate = doc.createElementNS( svgns, 'animate' );
 
         // set duration to 1ms to detect endEvent
-        animate.setAttributeNS(null, "dur", "1ms");
+        animate.setAttributeNS(null, 'dur', '1ms');
         // append elements
         element.appendChild(animate);
         svg.appendChild(element);
@@ -52,7 +53,7 @@
         }, false);
 
         // attach svg to the DOM (else it doesn't detect anything) but cache it
-        svg.setAttributeNS(null, "style", "display:none");
+        svg.setAttributeNS(null, 'style', 'display:none');
         doc.body.appendChild(svg);
         // Set a timeout to remove the dummy SVG element
         // It is setted to 50 to leave the DOM breath and get the SVG event
@@ -73,20 +74,20 @@
 
     // Timecount-value
     // = Formats without ':'
-    if ( times.length == 1 ) {
+    if ( times.length === 1 ) {
       time = times[0];
       // Time already given in milliseconds (250ms)
-      if ( time.lastIndexOf('ms') != -1 ) {
-        return parseInt(time);
+      if ( time.lastIndexOf('ms') !== -1 ) {
+        return +(time);
       }
       // Othermetrics
       else {
         // minutes
-        if( time.lastIndexOf('min') != -1 ) {
+        if( time.lastIndexOf('min') !== -1 ) {
           time = parseFloat(time) * 60;
         }
         // hours
-        else if( time.lastIndexOf('h') != -1 ) {
+        else if( time.lastIndexOf('h') !== -1 ) {
           time = parseFloat(time) * 3600;
         }
         // Time is now in seconds.
@@ -158,7 +159,7 @@
       }
       // if there is no event given, throw an error
       if ( !event.type ) {
-        throw new Error( "Event object missing 'type' property." );
+        throw new Error( 'Event object missing "type" property.' );
       }
       // If the type has associated triggers, then launch them
       if ( isArray( this._listeners[event.type] ) ) {
@@ -186,7 +187,7 @@
     }
     // ***
     // check event name and support for endEvent
-    if ( type == 'endEvent' && !isEventSupported( 'end' ) ) {
+    if ( type === 'endEvent' && !isEventSupported( 'end' ) ) {
       // Add listener to the endEvent stack
       this.listeners.add( type, listener );
       // check if autofire is already enabled
@@ -196,9 +197,9 @@
           window.setTimeout( function () {
             // Check again is the support is true or not.
             // Early return if true (don't trigger the custom event stack)
-            if( !!isEventSupported( 'end' ) ) return;
+            if( !!isEventSupported( 'end' ) ) { return; }
             that.listeners.fire( 'endEvent' );
-          }, clocker( duration ) )
+          }, clocker( duration ) );
         });
         // and set the autofire flag at true to prevent multiple endfire
         // launch
@@ -207,18 +208,18 @@
     }
     // ***
     // check event name and suport for beginEvent
-    if ( type == 'beginEvent' && !isEventSupported( 'begin' ) ) {
+    if ( type === 'beginEvent' && !isEventSupported( 'begin' ) ) {
       // Add listener to the endEvent stack
       this.listeners.add( type, listener );
       // Check if begin is set to a duration
-      if ( begin != 'indefinite' && begin.indexOf( '.end' ) == -1 ) {
+      if ( begin !== 'indefinite' && begin.indexOf( '.end' ) === -1 ) {
         // true, so check the autofire begin event
         if ( !this.listeners.autoFire.begin ) {
           // not already activated, so activate it
           window.setTimeout( function () {
             // Check again is the support is true or not.
             // Early return if true (don't trigger the custom event stack)
-            if( !!isEventSupported( 'begin' ) ) return;
+            if( isEventSupported( 'begin' ) ) { return; }
             that.listeners.fire( 'beginEvent' );
           }, clocker( begin ) );
           // set autofire to true to prevent multiple launch
@@ -226,7 +227,7 @@
         }
       }
       // if the lanch depends of the end of another animation
-      else if ( (index = begin.indexOf( '.end' )) != -1 ) {
+      else if ( (index = begin.indexOf( '.end' )) !== -1 ) {
         var previousAnimate = doc.getElementById( begin.substr(0, index) );
         // Add an endEvent that launch the next animation
         previousAnimate.addEventListener( 'endEvent', function () {
@@ -234,13 +235,13 @@
         });
       }
       // if the launch depends of a manual action (=indefinite)
-      else if ( begin == 'indefinite') {
+      else if ( begin === 'indefinite') {
         this.beginElement = function() {
           this.listeners.fire( 'beginEvent' );
           // ***
           // call the original method for fallback
-          return this.__proto__.beginElement.call( this );
-        }
+          return this.prototype.beginElement.call( this );
+        };
       }
     }
     // ***
