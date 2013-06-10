@@ -193,7 +193,7 @@
       // check if autofire is already enabled
       if ( !this.listeners.autoFire.end ) {
         // if not, add an autofired at the end of animation (=dur)
-        this.addEventListener ( 'beginEvent' , function () {
+        this.addEventListener( 'beginEvent' , function () {
           window.setTimeout( function () {
             // Check again is the support is true or not.
             // Early return if true (don't trigger the custom event stack)
