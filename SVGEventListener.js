@@ -240,7 +240,7 @@
           this.listeners.fire( 'beginEvent' );
           // ***
           // call the original method for fallback
-          return this.prototype.beginElement.call( this );
+          return this.beginElement();
         };
       }
     }
