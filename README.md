@@ -25,6 +25,13 @@ Any forks and stuff are welcome.
 
 ##Changelog##
 
+**0.2**
+
+* More lightweight implementation.
+* Use prototyped beginElement methods for SVGAnimateElement and SVGAnimateTransformElement.
+* Move auto fire events (begin and end) directly in EventListener constructor method instead of determines it when trigger.
+
+
 **0.1.2**
 
 * Update the support of event's `animate` element : the implementation currently not support event detection using a simple `animate['endEvent']?` test. We need to create dummy svg element and inject temporarily them to the DOM to make the detection and update a map of supported events :).
