@@ -25,6 +25,11 @@ Any forks and stuff are welcome.
 
 ##Changelog##
 
+**0.2.1**
+
+* Restore `event.currentTarget` pointer
+
+
 **0.2**
 
 * More lightweight implementation.

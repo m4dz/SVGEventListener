@@ -1,0 +1,21 @@
+<html>
+<head>
+  <title>SVGEventListener</title>
+  <meta charset="UTF-8">
+</head>
+<body>
+  <svg version="1.1" baseProfile="basic" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="board" viewBox="0 0 200 200" width="200" height="200">
+    <polygon id="square" points="20,20 20,60 60,60 60,20" style="stroke-width: 0; fill: #000;">
+      <animateTransform id="anim1" attributeType="xml" attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" begin="1s" dur="1s" />
+    </polygon>
+  </svg>
+
+  <script src="../SVGEventListener.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    var anim1 = document.getElementById('anim1');
+    anim1.addEventListener('endEvent', function(event) {
+        console.log(event);
+      }, false);
+  </script>
+</body>
+</html>
