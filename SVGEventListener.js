@@ -1,5 +1,5 @@
 // SVGEventListener.js
-// Version - 0.1.3
+// Version - 0.2
 //
 // by MAD - @madsgraphics - ecrire[at]madsgraphics.com
 //
@@ -9,37 +9,42 @@
 //
 // Please minify before use.
 
-( function ( window, doc, el ) {
+( function ( undefined ) {
 
   'use strict';
 
-  var addEventListenerLegacy = el.prototype.addEventListener,
-      svgns                  = 'http://www.w3.org/2000/svg',
+  var legacy = {
+        addEventListener : Element.prototype.addEventListener,
+        svgAnimateBeginElement : SVGAnimateElement.prototype.beginElement,
+        svgAnimateTransformBeginElement : SVGAnimateTransformElement.prototype.beginElement
+      },
+
+      svgns = 'http://www.w3.org/2000/svg',
       // helper functions
-      isString               = function ( s ) {
+      isString = function ( s ) {
         return typeof s === 'string';
       },
-      isArray                = Array.isArray || function ( obj ) {
+      isArray = Array.isArray || function ( obj ) {
         return {}.toString.call( obj ) === '[object Array]';
       },
-      isUndefined            = function ( obj ) {
+      isUndefined = function ( obj ) {
         return obj === undefined;
       },
-      // Inspired by:
-      // http://perfectionkills.com/detecting-event-support-without-browser-sniffing/
-      supportedEvents        = {},
-      isEventSupported       = function ( eventName ) {
+
+      // Cache events support
+      supportedEvents = {},
+      isEventSupported  = function ( eventName ) {
         // early return if the event is in cache
-        if ( typeof supportedEvents[eventName] !== 'undefined' ) {
+        if ( supportedEvents[eventName] !== undefined ) {
           return supportedEvents[eventName];
         }
 
         // initiliaze the support at false for detection
         supportedEvents[eventName] = false;
         // create svg (and childs) nodes
-        var svg     = doc.createElementNS( svgns, 'svg' ),
-            element = doc.createElementNS(svgns, 'rect'),
-            animate = doc.createElementNS( svgns, 'animate' );
+        var svg     = document.createElementNS( svgns, 'svg' ),
+            element = document.createElementNS( svgns, 'rect'),
+            animate = document.createElementNS( svgns, 'animate' );
 
         // set duration to 1ms to detect endEvent
         animate.setAttributeNS(null, 'dur', '1ms');
@@ -48,22 +53,23 @@
         svg.appendChild(element);
 
         // attach a listener to the event that update the events cache
-        addEventListenerLegacy.call(animate, eventName + 'Event', function() {
+        legacy.addEventListener.call(animate, eventName + 'Event', function() {
           supportedEvents[eventName] = true;
         }, false);
 
         // attach svg to the DOM (else it doesn't detect anything) but cache it
         svg.setAttributeNS(null, 'style', 'display:none');
-        doc.body.appendChild(svg);
+        document.body.appendChild(svg);
         // Set a timeout to remove the dummy SVG element
         // It is setted to 50 to leave the DOM breath and get the SVG event
         // result before removing it :)
-        setTimeout(function() { doc.body.removeChild(svg); }, 50);
+        setTimeout(function() { document.body.removeChild(svg); }, 50);
 
         // Return the current event support status
         return supportedEvents[eventName];
       };
 
+  //////////////////////////////////////////////////////////////////////////////
   // Clocker.js
   // Convert a legal clock string value (in SMIL definition) to milliseconds
   //
@@ -112,9 +118,8 @@
     }
   }
 
-  /***
-   * Event Listener
-   ***/
+  //////////////////////////////////////////////////////////////////////////////
+  // Event Listener
 
   // Custom Event listener
   // Implements Observer pattern
@@ -122,21 +127,57 @@
   // inspired by: http://www.nczonline.net/blog/2010/03/09/custom-events-in-javascript/
 
   // Create custom listener object with private property to store listeners
-  function EventListener( parent ) {
-    // listeners stack
-    this._listeners = {};
-    // autoFire flag for register launching
-    this.autoFire   = {
-      begin: false,
-      end: false
-    };
-    // store parent obj
-    this.parent = parent;
+  function EventListener( element ) {
+    // store SVG node
+    this.el = element;
+    // constructs stack
+    this._init();
   }
 
   // Extends it to add and fire events
   EventListener.prototype = {
     constructor: EventListener,
+    // initializer
+    _init: function() {
+      var that  = this,
+          begin = this.el.getAttribute('begin'),
+          dur   = this.el.getAttribute('dur'),
+          index;
+
+      // Initialize events stack
+      this._listeners = {};
+
+      // Add auto events (begin and end events)
+      // Begin event delayed
+      if ( begin !== 'indefinite' && begin.indexOf( '.end' ) === -1 ) {
+        // true, so check the autofire begin event
+        window.setTimeout( function () {
+          // Check again is the support is true or not.
+          // Early return if true (don't trigger the custom event stack)
+          if( isEventSupported( 'begin' ) ) { return; }
+          that.fire( 'beginEvent' );
+        }, clocker( begin ));
+      }
+
+      // if the lanch depends of the end of another animation
+      else if ( (index = begin.indexOf( '.end' )) !== -1 ) {
+        var previousAnimate = document.getElementById( begin.substr(0, index) );
+        // Add an endEvent that launch the next animation
+        previousAnimate.addEventListener( 'endEvent', function () {
+          that.fire( 'beginEvent' );
+        });
+      }
+
+      // End event delayed at duration time
+      this.add( 'beginEvent', function() {
+        window.setTimeout( function () {
+          // Check again is the support is true or not.
+          // Early return if true (don't trigger the custom event stack)
+          if( isEventSupported( 'end' ) ) { return; }
+          that.fire( 'endEvent' );
+        }, clocker( dur ));
+      });
+    },
     // add new event to listeners
     add: function addListener( type, listener ) {
       // if there is no triggers already defined for this events,
@@ -165,7 +206,7 @@
       if ( isArray( this._listeners[event.type] ) ) {
         var listeners = this._listeners[event.type];
         for ( var l in listeners ) {
-          listeners[l].call( this, event );
+          listeners[l].call( this.el, event );
         }
       }
     }
@@ -174,79 +215,46 @@
   // Overwrite Element.addEventListener method for transparency fallback
   //
   // Inpired by: http://stackoverflow.com/questions/7220515/extending-node-addeventlistener-method-with-the-same-name#7220628
-  el.prototype.addEventListener = function ( type, listener, useCapture ) {
-    var index,
-        begin    = this.getAttribute('begin'),
-        duration = this.getAttribute('dur'),
-        that     = this;
-    // ***
-    // Attach a new event listeners stack if it doesn't exists
-    if( isUndefined( this.listeners ) )
-    {
-      this.listeners = new EventListener( this );
-    }
-    // ***
-    // check event name and support for endEvent
-    if ( type === 'endEvent' && !isEventSupported( 'end' ) ) {
-      // Add listener to the endEvent stack
-      this.listeners.add( type, listener );
-      // check if autofire is already enabled
-      if ( !this.listeners.autoFire.end ) {
-        // if not, add an autofired at the end of animation (=dur)
-        this.addEventListener( 'beginEvent' , function () {
-          window.setTimeout( function () {
-            // Check again is the support is true or not.
-            // Early return if true (don't trigger the custom event stack)
-            if( !!isEventSupported( 'end' ) ) { return; }
-            that.listeners.fire( 'endEvent' );
-          }, clocker( duration ) );
-        });
-        // and set the autofire flag at true to prevent multiple endfire
-        // launch
-        this.listeners.autoFire.end = true;
+  Element.prototype.addEventListener = function ( type, listener, useCapture ) {
+    if ( this instanceof SVGAnimateElement
+      || this instanceof SVGAnimateTransformElement ) {
+      // ***
+      // Attach a new event listeners stack if it doesn't exists
+      if ( isUndefined( this.listeners ) )
+      {
+        this.listeners = new EventListener( this );
       }
-    }
-    // ***
-    // check event name and suport for beginEvent
-    if ( type === 'beginEvent' && !isEventSupported( 'begin' ) ) {
-      // Add listener to the endEvent stack
-      this.listeners.add( type, listener );
-      // Check if begin is set to a duration
-      if ( begin !== 'indefinite' && begin.indexOf( '.end' ) === -1 ) {
-        // true, so check the autofire begin event
-        if ( !this.listeners.autoFire.begin ) {
-          // not already activated, so activate it
-          window.setTimeout( function () {
-            // Check again is the support is true or not.
-            // Early return if true (don't trigger the custom event stack)
-            if( isEventSupported( 'begin' ) ) { return; }
-            that.listeners.fire( 'beginEvent' );
-          }, clocker( begin ) );
-          // set autofire to true to prevent multiple launch
-          this.listeners.autoFire.begin = true;
-        }
+      // ***
+      // check event name and support for endEvent
+      if ( type === 'endEvent' && !isEventSupported( 'end' ) ) {
+        // Add listener to the endEvent stack
+        this.listeners.add( type, listener );
       }
-      // if the lanch depends of the end of another animation
-      else if ( (index = begin.indexOf( '.end' )) !== -1 ) {
-        var previousAnimate = doc.getElementById( begin.substr(0, index) );
-        // Add an endEvent that launch the next animation
-        previousAnimate.addEventListener( 'endEvent', function () {
-          that.listeners.fire( 'beginEvent' );
-        });
-      }
-      // if the launch depends of a manual action (=indefinite)
-      else if ( begin === 'indefinite') {
-        this.beginElement = function() {
-          this.listeners.fire( 'beginEvent' );
-          // ***
-          // call the original method for fallback
-          return this.beginElement();
-        };
+      // ***
+      // check event name and suport for beginEvent
+      if ( type === 'beginEvent' && !isEventSupported( 'begin' ) ) {
+        // Add listener to the endEvent stack
+        this.listeners.add( type, listener );
       }
     }
     // ***
     // call the original method for fallback
-    return addEventListenerLegacy.call( this, type, listener, useCapture );
+    return legacy.addEventListener.call( this, type, listener, useCapture );
   };
 
-})( this, document, Element );
+  // Overwrite Element.beginElement method to trigger begin event
+  SVGAnimateElement.prototype.beginElement = function() {
+    if ( !isEventSupported( 'begin' ) && this.listeners !== undefined) {
+      this.listeners.fire('beginEvent');
+    }
+    return legacy.svgAnimateBeginElement.call(this);
+  };
+
+  SVGAnimateTransformElement.prototype.beginElement = function() {
+    if ( !isEventSupported( 'begin' ) && this.listeners !== undefined) {
+      this.listeners.fire('beginEvent');
+    }
+    return legacy.svgAnimateTransformBeginElement.call(this);
+  };
+
+})();
