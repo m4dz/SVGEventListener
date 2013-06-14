@@ -1,5 +1,5 @@
 // SVGEventListener.js
-// Version - 0.2.1
+// Version - $version$
 //
 // by MAD - @madsgraphics - ecrire[at]madsgraphics[dot]com
 //
