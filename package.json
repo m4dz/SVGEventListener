@@ -1,0 +1,20 @@
+{
+  "name": "SVGEventListener",
+  "version": "0.2.1",
+  "author": "madsgraphics <code@madsgraphics.com>",
+  "description": "A polyfill for SVG animate events in non-supported browsers like wekbit engine",
+  "contributors": [],
+  "scripts": {
+    "test": "node_modules/.bin/mocha -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/madsgraphics/SVGEventListener.git"
+  },
+  "dependencies" : {},
+  "devDependencies": {
+    "mocha": "*",
+    "should": "*"
+  },
+  "license": "WTFPL | MIT | BSD"
+}
