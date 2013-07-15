@@ -1,5 +1,5 @@
 // SVGEventListener.js
-// Version - 0.2.2
+// Version - 0.2.3
 //
 // by MAD - @madsgraphics - ecrire[at]madsgraphics[dot]com
 //
@@ -194,11 +194,17 @@
     fire: function fireListeners( event ) {
       // if called only by event name (useful), build a correct object
       if ( isString( event ) ) {
-        event = {type: event};
+        event = {
+          type: event,
+          bubbles: false,
+          cancelable: false,
+          defaultPrevented: false,
+          currentTarget : null,
+        };
       }
       // set target if unavailable
-      if ( !event.target || !event.currentTarget ) {
-        event.target = event.currentTarget = this.el;
+      if ( !event.target ) {
+        event.target = event.originalTarget = this.el;
       }
       // if there is no event given, throw an error
       if ( !event.type ) {
