@@ -25,6 +25,17 @@ Any forks and stuff are welcome.
 
 ##Changelog##
 
+**0.2.3**
+
+* Improve the event object to keep it more closer to the FF TimeEvent object
+
+
+**0.2.2**
+
+* Prevent BeginEvent to launch the EndEvent on previousAnimate if this one doesn't exists
+* Add Package JSON toi ditribute by Bower
+
+
 **0.2.1**
 
 * Restore `event.currentTarget` pointer
