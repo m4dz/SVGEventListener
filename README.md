@@ -28,6 +28,7 @@ Any forks and stuff are welcome.
 **0.2.3**
 
 * Improve the event object to keep it more closer to the FF TimeEvent object
+* Fix delayed start based on the beginning of another animate element (`#id.begin`)
 
 
 **0.2.2**
